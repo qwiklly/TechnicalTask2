@@ -1,0 +1,125 @@
+﻿@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Главная страница</h2>
+
+<div>
+    <label>Имя</label>
+    <input type="text" id="name" class="form-control" />
+    <span id="nameError" class="text-danger" style="display:none">Введите имя</span>
+</div>
+<div>
+    <label>Email</label>
+    <input type="text" id="email" class="form-control" />
+    <span id="emailError" class="text-danger" style="display:none">Введите email</span>
+</div>
+<div>
+    <label>Блюдо</label>
+    <select id="dishId" class="form-control">
+        <option value="">Выберите блюдо</option>
+        @foreach (var dish in ViewBag.Dishes)
+        {
+            <option value="@dish.Value">@dish.Text</option>
+        }
+    </select>
+    <span id="dishIdError" class="text-danger" style="display:none">Выберите блюдо</span>
+</div>
+<br />
+<div>
+    <button type="button" id="addNewDish" class="btn btn-primary">Добавить новое блюдо</button>
+    <button type="button" id="addMealButton" class="btn btn-success">Рассказать о том, что я ем</button>
+</div>
+<br />
+<div id="dishModal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Добавить новое блюдо</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <label>Название блюда</label>
+                    <input type="text" id="dishName" class="form-control" />
+                </div>
+                <div id="error-message" class="text-danger" style="display: none;"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="addDishButton" class="btn btn-primary">Добавить</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="resultMessage" class="alert alert-success" style="display:none"></div>
+<div id="mealRecords" style="display:none">
+    <h3>Также люди едят:</h3>
+    <ul id="mealRecordsList"></ul>
+</div>
+
+@section scripts {
+    <script src="~/Scripts/jquery-3.6.0.min.js"></script>
+    <script src="~/Scripts/bootstrap.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#addNewDish').click(function () {
+                $('#dishModal').modal('show');
+            });
+
+            $('#addDishButton').click(function () {
+                var dishName = $('#dishName').val();
+                $.post('@Url.Action("AddDish", "Home")', { dishName: dishName }, function (data) {
+                    if (data.success) {
+                        $('#dishId').append(new Option(data.dishName, data.dishId));
+                        $('#dishModal').modal('hide');
+                    } else {
+                        $('#error-message').text(data.message).show();
+                    }
+                });
+            });
+
+            $('#addMealButton').click(function () {
+                var name = $('#name').val();
+                var email = $('#email').val();
+                var dishId = $('#dishId').val();
+
+                var isValid = true;
+
+                if (!name) {
+                    $('#nameError').show();
+                    isValid = false;
+                } else {
+                    $('#nameError').hide();
+                }
+
+                if (!email) {
+                    $('#emailError').show();
+                    isValid = false;
+                } else {
+                    $('#emailError').hide();
+                }
+
+                if (!dishId) {
+                    $('#dishIdError').show();
+                    isValid = false;
+                } else {
+                    $('#dishIdError').hide();
+                }
+
+                if (isValid) {
+                    $.post('@Url.Action("AddMeal", "Home")', { name: name, email: email, dishId: dishId }, function (data) {
+                        if (data.success) {
+                            window.location.href = '@Url.Action("ResultDishes", "Home")';
+                        } else {
+                            $('#resultMessage').text(data.message).show();
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+}

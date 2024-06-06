@@ -1,0 +1,24 @@
+﻿@model IEnumerable<WebApplication5.Models.MealRecord>
+@{
+    ViewBag.Title = "ResultDishes";
+}
+
+<h2>Результат</h2>
+
+@if (!string.IsNullOrEmpty(ViewBag.Message))
+{
+    <p>@ViewBag.Message</p>
+}
+
+<p>@ViewBag.Message1</p>
+
+<h3>Также люди едят:</h3>
+
+<ul>
+    @foreach (var record in ViewBag.Records)
+    {
+        <li>@record.DateTime.ToString("HH:mm dd/MM/yyyy") @record.User.Name (@record.User.Email) съел @record.Dish.Name</li>
+    }
+</ul>
+
+
